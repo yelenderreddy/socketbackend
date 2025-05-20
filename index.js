@@ -9,7 +9,7 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://socketfrontend-production-69da.up.railway.app", // React app origin
+    origin: "https://socketfrontend-production-69da.up.railway.app",
     methods: ["GET", "POST"]
   }
 });
@@ -18,7 +18,8 @@ io.on("connection", (socket) => {
   console.log("A user connected: " + socket.id);
 
   socket.on("send_message", (data) => {
-    io.emit("receive_message", data); // Broadcast to all
+    // Expected data: { username: string, message: string }
+    io.emit("receive_message", data);
   });
 
   socket.on("disconnect", () => {
@@ -26,6 +27,7 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(4000, () => {
-  console.log("Server is running on http://localhost:4000");
+const PORT = process.env.PORT || 4000;
+server.listen(PORT, () => {
+  console.log("Server is running on port " + PORT);
 });
