@@ -5,11 +5,11 @@ const cors = require("cors");
 
 const app = express();
 
-// Enable CORS for frontend origin
+// Allow frontend Railway domain
 app.use(cors({
   origin: "https://socketfrontend-production-69da.up.railway.app",
   methods: ["GET", "POST"],
-  credentials: true
+  credentials: true,
 }));
 
 const server = http.createServer(app);
@@ -18,17 +18,23 @@ const io = new Server(server, {
   cors: {
     origin: "https://socketfrontend-production-69da.up.railway.app",
     methods: ["GET", "POST"],
-    credentials: true
-  }
+    credentials: true,
+  },
 });
 
-// Handle Socket.IO connections
 io.on("connection", (socket) => {
   console.log("✅ User connected:", socket.id);
 
   socket.on("send_message", (data) => {
-    console.log("📨 Message received:", data);
-    io.emit("receive_message", data); // broadcast to all
+    io.emit("receive_message", data); // Broadcast message
+  });
+
+  socket.on("typing", (username) => {
+    socket.broadcast.emit("user_typing", username); // Send to others
+  });
+
+  socket.on("stop_typing", () => {
+    socket.broadcast.emit("user_stop_typing");
   });
 
   socket.on("disconnect", () => {
@@ -36,7 +42,6 @@ io.on("connection", (socket) => {
   });
 });
 
-// Start server
 const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
